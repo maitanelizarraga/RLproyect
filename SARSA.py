@@ -1,107 +1,71 @@
+
 import numpy as np
 import matplotlib.pyplot as plt
+
+import tools
 from env import GridworldEnv
+from td_learning import (get_action, epsilon_at, evaluate_policy, greedy_V,
+                          show_policy, show_environment, play_greedy, GOAL_STATE)
 
 
-def epsilon_greedy(Q, state, epsilon, n_actions):
-    """Elige una acción aleatoria con probabilidad epsilon; si no, la mejor conocida."""
-    if np.random.random() < epsilon:
-        return np.random.randint(n_actions)
-    best_actions = np.flatnonzero(Q[state] == np.max(Q[state]))
-    return int(np.random.choice(best_actions))
-
-def train_sarsa(episodes=5000,alpha=0.1,gamma=0.99,epsilon=0.1,max_steps=200,is_slippery=False,seed=42,):
-    """Entrena SARSA sobre el Gridworld definido en env.py."""
+def train_sarsa(env, episodes=5000, alpha=0.1, gamma=0.99,
+                epsilon_start=1.0, epsilon_min=0.05, epsilon_decay=0.999,
+                max_steps=200, seed=42):
+    """Trains SARSA on `env`. Returns (Q, rewards_per_episode, successes_per_episode)."""
     np.random.seed(seed)
-    environment = GridworldEnv(render_mode=None, is_slippery=is_slippery)
-    n_states = environment.n_states
-    n_actions = environment.n_actions
-    Q = np.zeros((n_states, n_actions), dtype=float)
-    episode_rewards = []
+    nA = env.n_actions
+    Q = np.zeros((env.n_states, nA))
+    rewards, successes = [], []
 
-    for episode in range(episodes):
-        state, episode = environment.reset()
-        action = epsilon_greedy(Q, state, epsilon, n_actions)
-        total_reward = 0.0
+    for ep in range(episodes):
+        s, _ = env.reset(seed=seed + ep)          
+        eps = epsilon_at(ep, epsilon_start, epsilon_min, epsilon_decay)
+        a = get_action(int(np.argmax(Q[s])), eps, nA)
+        total, hit = 0.0, False
 
-        for episode in range(max_steps):
-            next_state, reward, terminated, truncated, episode = environment.step(action)
-            total_reward += reward
-            done = terminated or truncated
+                
+        for _ in range(max_steps):
+            s2, r, term, trunc, _ = env.step(a)
+            total += r
 
-            if done:
-                Q[state, action] += alpha * (reward - Q[state, action])
+            if term or trunc:
+                Q[s, a] += alpha * (r - Q[s, a])
+                hit = (s2 == GOAL_STATE)
                 break
 
-            next_action = epsilon_greedy(Q, next_state, epsilon, n_actions)
-            target = reward + gamma * Q[next_state, next_action]
-            Q[state, action] += alpha * (target - Q[state, action])
-            state, action = next_state, next_action
+            a2 = get_action(int(np.argmax(Q[s2])), eps, nA)
+            Q[s, a] += alpha * (
+                r + gamma * Q[s2, a2] - Q[s, a]
+            )
+            s, a = s2, a2
 
-        episode_rewards.append(total_reward)
 
-    environment.close()
-    return Q, episode_rewards
+        rewards.append(total)
+        successes.append(int(hit))
 
-def show_policy(Q):
-    """Imprime la acción greedy de cada estado."""
-    arrows = {0: "←", 1: "↓", 2: "→", 3: "↑"}
-    wall_state = 5
-    terminal_states = {3: "+1", 7: "-1"}
+    return Q, rewards, successes
 
-    print("\nPolítica aprendida:")
-    for row in range(3):
-        cells = []
-        for col in range(4):
-            state = row * 4 + col
-            if state == wall_state:
-                cells.append("###")
-            elif state in terminal_states:
-                cells.append(f" {terminal_states[state]} ")
-            else:
-                cells.append(f" {arrows[int(np.argmax(Q[state]))]} ")
-        print(" | ".join(cells))
-
-def show_environment():
-    """Muestra el entorno """
-    environment = GridworldEnv(render_mode="rgb_array")
-    environment.reset()
-    image = environment.render()
-
-    plt.figure(figsize=(8, 6))
-    plt.imshow(image)
-    plt.title("Gridworld")
-    plt.axis("off")
-    plt.tight_layout()
-    plt.show()
-
-    environment.close()
 
 if __name__ == "__main__":
-    Q, rewards = train_sarsa(
-        episodes=5000,
-        alpha=0.1,
-        gamma=0.99,
-        epsilon=0.1,
-        is_slippery=False,
-    )
-    
+    env = GridworldEnv(is_slippery=False)          
+    Q, rewards, successes = train_sarsa(env, episodes=5000, alpha=0.1, gamma=0.99)
 
-    print("Entrenamiento SARSA terminado.")
+    sr, ret, steps = evaluate_policy(Q, env)
+    print(f"SARSA: success={sr:.1%}  return={ret:.4f}  steps={steps:.2f}")
     print(f"Tabla Q: {Q.shape[0]} estados x {Q.shape[1]} acciones")
-    show_policy(Q)
+    show_policy(Q, "SARSA")
+
+    tools.plot_policy(np.argmax(Q, axis=1), env, title="π(s) — SARSA")
+    tools.plot_value_function(greedy_V(Q), env, title="V(s) — SARSA")
 
     window = 100
-    if len(rewards) >= window:
-        moving_average = np.convolve(
-            rewards, np.ones(window) / window, mode="valid"
-        )
-        plt.figure(figsize=(9, 4))
-        plt.plot(moving_average)
-        plt.title(f"Recompensa media móvil ({window} episodios)")
-        plt.xlabel("Episodio")
-        plt.ylabel("Recompensa media")
-        plt.tight_layout()
-        plt.show()
+    ma = np.convolve(rewards, np.ones(window) / window, mode="valid")
+    plt.figure(figsize=(9, 4))
+    plt.plot(ma)
+    plt.title(f"SARSA: recompensa media móvil ({window} episodios)")
+    plt.xlabel("Episodio"); plt.ylabel("Recompensa media")
+    plt.tight_layout(); plt.show()
 
-    show_environment()
+    show_environment(GridworldEnv(render_mode="rgb_array", is_slippery=False))
+    
+    
