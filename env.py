@@ -309,7 +309,6 @@ class GridworldEnv:
             self.window = None  # Reset window handle
 
 import time
-import tools
 
 if __name__ == "__main__":
     # 1. custom env with pygame render
@@ -324,7 +323,6 @@ if __name__ == "__main__":
 
     time.sleep(1)
     env.close()
-    tools.plot_environment(env)
     
 
     # # 2. custom env with ANSI render
@@ -338,7 +336,6 @@ if __name__ == "__main__":
     #     action = np.random.choice(env.n_actions)
     #     obs, reward, terminated, truncated, info = env.step(action)
     #     done = terminated or truncated
-    # tools.plot_environment(env)
 
     # # 3. gymnasium frozenlake with human render
     # import gymnasium as gym
@@ -355,7 +352,6 @@ if __name__ == "__main__":
     #     step_count += 1
     #
     # env.close()
-    # tools.plot_environment(env)
 
     # # 4. gymnasium frozenlake with ANSI render
     # import gymnasium as gym
@@ -374,4 +370,3 @@ if __name__ == "__main__":
     #     step_count += 1
     #
     # env.close()
-    # tools.plot_environment(env)
