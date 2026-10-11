@@ -1,17 +1,3 @@
-"""
-Optimizacion de hiperparametros de SARSA con Optuna.
-Mantiene el estilo de optuna_search.py: secciones numeradas, comentarios explicativos,
-mensajes de progreso y resumen final de los mejores hiperparametros.
-
-Ejecutar desde la carpeta del proyecto:
-    python optimizar_sarsa.py
-
-Instalacion si hace falta:
-    uv add optuna numpy matplotlib pygame
-o:
-    pip install optuna numpy matplotlib pygame
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 import optuna
