@@ -80,8 +80,8 @@ def optimize_q_learning():
 
     study.optimize(objective_q_learning, n_trials=50)
 
-    print("\nMejor resultado de Q-learning:", study.best_value)
-    print("Mejores hiperparámetros:", study.best_params)
+    print("\nBest results Q-learning:", study.best_value)
+    print("Best hyperparameters:", study.best_params)
 
     p = study.best_params
     best_params = {
@@ -109,7 +109,7 @@ def optimize_q_learning():
         max_steps=200, seed=20_000
     )
 
-    print(f"Reevaluación Q-learning: success={sr:.1%} return={ret:.4f}")
+    print(f"Reevaluation Q-learning: success={sr:.1%} return={ret:.4f}")
     show_policy(Q, "Q-learning (Optuna, stochastic)")
 
     study.trials_dataframe().to_csv(
@@ -135,7 +135,7 @@ def main():
     p = study.best_params
 
     
-    # Guardar los mejores hiperparámetros para run_experiments.py
+    # save best hyperparams for run_experiments.py
     best_params = {
         **p,
         "epsilon_min": min(p["epsilon_min"], p["epsilon_start"]),
@@ -193,7 +193,7 @@ def main():
 
     p_q = study_q.best_params
 
-    # Guardar los mejores hiperparámetros para run_experiments.py
+    # save best hyperparams for run_experiments.py
     best_params_q = {
         **p_q,
         "epsilon_min": min(p_q["epsilon_min"], p_q["epsilon_start"]),
