@@ -33,16 +33,20 @@ def moving_average(x, w=WINDOW):
 def main():
     os.makedirs(OUT, exist_ok=True)
 
-    params_path = Path("best_sarsa_params.json")
+    sarsa_params_path = Path("best_sarsa_params.json")
+    q_learning_params_path = Path("best_q_learning_params.json")
 
-    if not params_path.exists():
+    if not sarsa_params_path.exists() or not q_learning_params_path.exists():
         raise FileNotFoundError(
-            "Can't find best_sarsa_params.json. "
-            "First execute optimizacion.py."
+            "Not found best_sarsa_params.json and best_q_learning_params.json."
         )
 
-    with params_path.open("r", encoding="utf-8") as f:
+    with sarsa_params_path.open("r", encoding="utf-8") as f:
         best_params = json.load(f)
+
+    with q_learning_params_path.open("r", encoding="utf-8") as f:
+        best_q_learning_params = json.load(f)
+
     rows = []
 
     for tag, slippery in (("deterministic", False), ("stochastic", True)):
@@ -88,6 +92,17 @@ def main():
 
             "Q-learning": lambda sd: train_q_learning(
                 env, gamma=GAMMA, seed=sd
+            )[:2],
+
+            "Q-learning + Optuna": lambda sd: train_q_learning(
+                env,
+                episodes=5000,
+                alpha=best_q_learning_params["alpha"],
+                gamma=best_q_learning_params["gamma"],
+                epsilon_start=best_q_learning_params["epsilon_start"],
+                epsilon_min=best_q_learning_params["epsilon_min"],
+                epsilon_decay=best_q_learning_params["epsilon_decay"],
+                seed=sd,
             )[:2],
         }
 
