@@ -62,8 +62,8 @@ if __name__ == "__main__":
     ma = np.convolve(rewards, np.ones(window) / window, mode="valid")
     plt.figure(figsize=(9, 4))
     plt.plot(ma)
-    plt.title(f"SARSA: recompensa media móvil ({window} episodios)")
-    plt.xlabel("Episodio"); plt.ylabel("Recompensa media")
+    plt.title(f"SARSA: moving average reward ({window} episodes)")
+    plt.xlabel("Episode"); plt.ylabel("Mean reward")
     plt.tight_layout(); plt.show()
 
     show_environment(GridworldEnv(render_mode="rgb_array", is_slippery=False))

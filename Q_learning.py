@@ -59,6 +59,6 @@ if __name__ == "__main__":
     ma = np.convolve(rewards, np.ones(window) / window, mode="valid")
     plt.figure(figsize=(9, 4))
     plt.plot(ma)
-    plt.title(f"Q-learning: recompensa media móvil ({window} episodios)")
-    plt.xlabel("Episodio"); plt.ylabel("Recompensa media")
+    plt.title(f"Q-learning: moving average reward ({window} episode)")
+    plt.xlabel("Episodio"); plt.ylabel("Mean reward")
     plt.tight_layout(); plt.show()

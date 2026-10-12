@@ -60,7 +60,7 @@ def main():
     with open("best_sarsa_params.json", "w", encoding="utf-8") as f:
         json.dump(best_params, f, indent=4)
 
-    print("Hiperparámetros guardados en best_sarsa_params.json")
+    print("Saved hyperparameters in best_sarsa_params.json")
 
     Q, rewards, successes = train_sarsa(
         TUNE_ENV, episodes=FIXED_EPISODES, alpha=p["alpha"], gamma=p["gamma"],
@@ -72,14 +72,14 @@ def main():
     print(f"\nRe-evaluación: success={sr:.1%}  return={ret:.4f}")
     show_policy(Q, "SARSA (Optuna, stochastic)")
 
-    study.trials_dataframe().to_csv("resultados_optuna_sarsa_stochastic.csv", index=False)
+    study.trials_dataframe().to_csv("results_optuna_sarsa_stochastic.csv", index=False)
 
     window = 100
     ma = np.convolve(rewards, np.ones(window) / window, mode="valid")
     plt.figure(figsize=(9, 4))
     plt.plot(ma)
-    plt.title(f"SARSA optimizado: recompensa media móvil ({window})")
-    plt.xlabel("Episodio"); plt.ylabel("Recompensa media")
+    plt.title(f"SARSA optimized: Moving average Reward ({window})")
+    plt.xlabel("Episode"); plt.ylabel("Mean reward")
     plt.tight_layout(); plt.show()
 
     try:
@@ -87,7 +87,7 @@ def main():
         plot_optimization_history(study)
         plt.tight_layout(); plt.show()
     except Exception as exc:
-        print(f"No se pudo mostrar la gráfica de Optuna: {exc}")
+        print(f"Can not show the Optuna graphic: {exc}")
 
 
 if __name__ == "__main__":

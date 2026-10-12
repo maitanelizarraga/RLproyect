@@ -37,8 +37,8 @@ def main():
 
     if not params_path.exists():
         raise FileNotFoundError(
-            "No se encuentra best_sarsa_params.json. "
-            "Ejecuta primero optimizacion.py."
+            "Can't find best_sarsa_params.json. "
+            "First execute optimizacion.py."
         )
 
     with params_path.open("r", encoding="utf-8") as f:
@@ -55,7 +55,7 @@ def main():
         print(f"PI policy == VI policy: {np.array_equal(pi_pi, pi_star)}")
 
         sr, ret, steps = evaluate_policy(Q_star, env)
-        print(f"Óptimo (VI):  success={sr:.3f}  return={ret:.4f}  steps={steps:.2f}")
+        print(f"Optimal (VI):  success={sr:.3f}  return={ret:.4f}  steps={steps:.2f}")
         show_policy(Q_star, f"π* ({tag}, Value Iteration)")
         tools.plot_value_function(V_star, env, title=f"V* — {tag} (VI)")
         tools.plot_policy(pi_star, env, title=f"π* — {tag} (VI)")
@@ -104,7 +104,7 @@ def main():
                 rows.append(dict(env=tag, algo=name, seed=sd,
                                  success=sr, ret=ret, steps=steps, q_err=q_err))
             curves[name] = np.asarray(runs)
-            show_policy(Q, f"π ({name}, {tag}, última seed)")   
+            show_policy(Q, f"π ({name}, {tag}, last seed)")   
             print(f"{name:13s} success={np.mean([m[0] for m in metrics]):.3f} "
                   f"return={np.mean([m[1] for m in metrics]):.4f} "
                   f"steps={np.mean([m[2] for m in metrics]):.2f} "
@@ -116,8 +116,8 @@ def main():
             x = np.arange(len(m)) + WINDOW - 1
             plt.plot(x, m, label=name)
             plt.fill_between(x, m - s, m + s, alpha=0.2)
-        plt.title(f"{tag}: recompensa media móvil ({WINDOW} eps, {len(SEEDS)} seeds)")
-        plt.xlabel("Episodio"); plt.ylabel("Recompensa media")
+        plt.title(f"{tag}: Moving Average Reward ({WINDOW} eps, {len(SEEDS)} seeds)")
+        plt.xlabel("Episode"); plt.ylabel("Mean Reward")
         plt.ylim(-1.05, 1.05); plt.legend(); plt.grid(alpha=0.3)
         plt.tight_layout()
         plt.savefig(f"{OUT}/curves_{tag}.png", dpi=150)
@@ -126,13 +126,13 @@ def main():
     
     df = pd.DataFrame(rows)
     df.to_csv(f"{OUT}/summary.csv", index=False)
-    print("\n===== SUMMARY (mean over seeds) =====")
+    print("\n *****SUMMARY (mean over seeds)*****")
     print(df.groupby(["env", "algo"])[["success", "ret", "steps", "q_err"]]
             .mean().round(4).to_string())
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.5))
     for ax, col, title in zip(axes, ["success", "ret"],
-                              ["Tasa de éxito (eval greedy)", "Retorno medio (eval greedy)"]):
+                              ["Ruccess Rate (eval greedy)", "Average return (eval greedy)"]):
         m = df.pivot_table(index="algo", columns="env", values=col)
         s = df.pivot_table(index="algo", columns="env", values=col, aggfunc="std")
         m.plot(kind="bar", yerr=s, ax=ax, capsize=4, rot=15)
@@ -140,7 +140,7 @@ def main():
     fig.tight_layout()
     fig.savefig(f"{OUT}/final_performance.png", dpi=150)
     plt.close()
-    print(f"\nFigures + CSVs saved in ./{OUT}/ — use them directly in the slides.")
+    print(f"\nFigures + CSVs saved in ./{OUT}/.")
 
 
 
